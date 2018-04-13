@@ -1,3 +1,4 @@
+
 # RxSwift
 
 > 推荐文档
@@ -166,6 +167,3 @@ ReplaySubject 将对观察者发送 **全部** 的元素，无论观察者是何
 ### Variable
 
 Variable 封装了一个 BehaviorSubject，所以它会持有当前值，并且 Variable 会对新的观察者发送当前值。它不会产生 error 事件。Variable 在 deinit 时，会发出一个 completed 事件。
-
-
-
