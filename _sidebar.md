@@ -1,2 +1,1 @@
-- Swift
-  - [RxSwift](ios/rx.md)
+- [RxSwift](ios/rx.md)

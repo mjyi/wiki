@@ -1,3 +1,6 @@
+> 推荐文档
+- [RxSwift 官方文档](https://github.com/ReactiveX/RxSwift/blob/master/Documentation/)
+
 ## Observables aka Sequences
 
 __每个 Observable 序列只是一个序列。Observable 相较 Swift 的SequenceType 的核心优势是它能异步的接收元素。这是 RxSwift 的核心。__
@@ -47,4 +50,18 @@ sequence
         print($0)
     }
 ```
+
+## Observable 隐式惯例
+
+还有一些额外的保证，所有的序列制作者（Observable）必须遵守。
+
+无论生产者在哪个线程制造元素，如果他们生成一个元素并且发送给观察者(observer) observer.on(.Next(nextElement)), 他们不能发送下一个元素直到 observer.on 方法完成执行。
+
+如果.next事件尚未完成，生产者也无法发送终止.completed或.error。
+
+## Create Observable (aka observable sequence)
+
+当一个 observable 被创建，它不会因为它已经创建而执行任何工作。
+
+*Observable 可以通过多种方式生成元素。其中一些会导致副作用，其中一些会利用现有的运行流程，如鼠标的点击事件等*
 
