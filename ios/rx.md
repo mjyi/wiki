@@ -1,5 +1,9 @@
+# RxSwift
+
 > 推荐文档
 - [RxSwift 官方文档](https://github.com/ReactiveX/RxSwift/blob/master/Documentation/)
+- [Rx Marbles]
+(http://rxmarbles.com/)
 
 ## Observables aka Sequences
 
@@ -64,4 +68,104 @@ sequence
 当一个 observable 被创建，它不会因为它已经创建而执行任何工作。
 
 *Observable 可以通过多种方式生成元素。其中一些会导致副作用，其中一些会利用现有的运行流程，如鼠标的点击事件等*
+
+## Observable
+
+observer 订阅 Observable。然后该 observer 对Observable发出的任何项目或项目序列作出反应。这种模式有利于并发操作，因为它在等待 Observable 发送对象时不需要阻塞，而是以 observer 的形式创建一个哨兵，随时准备在 Observable 将来的任何时间作出适当的反应。
+
+### Single
+
+- 发出一个元素，或一个 `error` 事件
+- 不会共享状态变化
+
+### Completable
+
+- 发出零个元素
+- 发出一个 completed 事件或者一个 error 事件
+- 不会共享状态变化
+
+适用于那种你只关心任务是否完成，而不需要在意任务返回值的情况。
+
+### Maybe
+
+- 发出一个元素或者一个 completed 事件或者一个 error 事件
+- 不会共享状态变化
+
+### Driver
+
+主要是为了简化 UI 层的代码。
+
+- 不会产生 error 事件
+- 一定在 MainScheduler 监听（主线程监听）
+- 共享状态变化
+
+__任何可被监听的序列都可以被转换为 `Driver`__
+
+- 不会产生 error 事件
+- 一定在 MainScheduler 监听（主线程监听）
+- 共享状态变化
+
+_asDriver(onErrorJustReturn: [])_ 等价于：
+
+```swift
+let safeSequence = xs
+  .observeOn(MainScheduler.instance)       // 主线程监听
+  .catchErrorJustReturn(onErrorJustReturn) // 无法产生错误
+  .share(replay: 1, scope: .whileConnected)// 共享状态变化
+return Driver(raw: safeSequence)           // 封装
+```
+### ControlEvent
+
+ControlEvent 专门用于描述 UI 控件所产生的事件。
+
+- 不会产生 error 事件
+- 一定在 MainScheduler 订阅（主线程订阅）
+- 一定在 MainScheduler 监听（主线程监听）
+- 共享状态变化
+
+## Observable & Observer
+
+> 在我们所遇到的事物中，有一部分非常特别。它们既是可被监听的序列也是观察者。
+
+例如： `textField` 的当前文本
+
+```swift
+// 作为可被监听的序列
+let observable = textField.rx.text
+observable.subscribe(onNext: { text in show(text: text) })
+
+// 作为观察者
+let observer = textField.rx.text
+let text: Observable<String?> = ...
+text.bind(to: observer)
+```
+框架里面定义了一些辅助类型，它们既是可被监听的序列也是观察者。如果你能合适的应用这些辅助类型，它们就可以帮助你更准确的描述事物的特征。
+
+### AsyncSubject
+
+AsyncSubject 将在源 Observable 产生完成事件后，**发出最后一个元素（仅仅只有最后一个元素）**，如果源 Observable 没有发出任何元素，只有一个完成事件。那 AsyncSubject 也只有一个完成事件。
+
+它会对随后的观察者发出最终元素。如果源 Observable 因为产生了一个 error 事件而中止， AsyncSubject 就不会发出任何元素，而是将这个 error 事件发送出来。
+
+### PublishSubject
+
+PublishSubject 将对观察者发送 **订阅后** 产生的元素，而在订阅前发出的元素将不会发送给观察者。
+
+如果源 Observable 因为产生了一个 error 事件而中止， PublishSubject 就不会发出任何元素，而是将这个 error 事件发送出来。
+
+### ReplaySubject
+
+ReplaySubject 将对观察者发送 **全部** 的元素，无论观察者是何时进行订阅的。
+
+如果把 ReplaySubject 当作观察者来使用，注意不要在多个线程调用 onNext, onError 或 onCompleted。这样会导致无序调用，将造成意想不到的结果。
+
+### BehaviorSubject
+
+当观察者对 BehaviorSubject 进行订阅时，它会将源 Observable 中 **最新的元素发送出来（如果不存在最新的元素，就发出默认元素）**。然后将随后产生的元素发送出来。
+
+### Variable
+
+Variable 封装了一个 BehaviorSubject，所以它会持有当前值，并且 Variable 会对新的观察者发送当前值。它不会产生 error 事件。Variable 在 deinit 时，会发出一个 completed 事件。
+
+
 
