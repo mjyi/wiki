@@ -1,2 +1,2 @@
-- [设计模式](design_patterns_/README.md)
-- [操作系统]()
+<!-- - [设计模式](design_patterns_/README.md) -->
+<!-- - [Wiki]() -->
